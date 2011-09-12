@@ -13,9 +13,9 @@ An example instance of the application allowing you to connect to the [freenode]
 
 ## Installation
 
-  % git clone git@github.com:syrio/constant-stream.git
-  % cd constant-stream
-  % npm install
+    % git clone git@github.com:syrio/constant-stream.git
+    % cd constant-stream
+    % npm install
 
 ### Define the IRC server
 
@@ -36,9 +36,9 @@ By default, the constant-stream server will check every 999 seconds to see which
 
 ### Deployment
 
-  % $YOUR_REDIS_PATH/src/redis-server
-  % cd constant-stream
-  % npm start
+    % $YOUR_REDIS_PATH/src/redis-server
+    % cd constant-stream
+    % npm start
 
 And then visit http://localhost:3000
 
@@ -95,19 +95,19 @@ The client listens to events using the IRC channel as the SocketStream Pub/Sub c
 
 ``` coffee-script
 
-SS.events.on "#{channel}:newMessage", (message) -> ...
+    SS.events.on "#{channel}:newMessage", (message) -> ...
+    
+    SS.events.on "#{channel}:newMember", (member) -> ...
+    
+    SS.events.on "#{channel}:leavingMember", (member) -> ...
+    
+    SS.events.on "#{channel}:currentTopic", (topic) -> ...
+    
+    SS.events.on "#{channel}:currentMembers", (members) -> ...
 
-SS.events.on "#{channel}:newMember", (member) -> ...
-
-SS.events.on "#{channel}:leavingMember", (member) -> ...
-
-SS.events.on "#{channel}:currentTopic", (topic) -> ...
-
-SS.events.on "#{channel}:currentMembers", (members) -> ...
-
-...
-
-SS.events.on "newPrivateMessage", (message) -> ...
+    ...
+    
+    SS.events.on "newPrivateMessage", (message) -> ...
 
 ```
 
@@ -117,7 +117,7 @@ Upon reloading the app by refreshing the page or closing and reopening the brows
 
 ### Browser compatibility
 
-Tested to work with Google Chrome 13.0.780.220. Basic sanity tests were done with Firefox 7.0.
+Tested to work with Google Chrome 13.0.780.220. Basic sanity tests were done with Firefox 7.0 and Safari Version 5.0.2 (6533.18.5).
 
 ### Client files
 
@@ -141,7 +141,7 @@ Both the client and server application code doesn't have any tests at the moment
 
 ### Running the tests
 
-  % npm test
+    % npm test
 
 
 ### License
