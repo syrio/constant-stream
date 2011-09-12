@@ -1,0 +1,23 @@
+#content,body{font:normal 1em sans-serif;text-align:center}
+h1{font-size:2.5em;font-weight:normal;margin-bottom:1em;color:#0057c5;font-family:Pacifico;text-shadow:0 1px 0 rgba(255,255,255,0.80)}
+.chat{width:1000px;text-align:left;background-color:#eee;background-image:-webkit-gradient(linear,left top,left bottom,from(#ddd),to(#eee));background-image:-moz-linear-gradient(top,#ddd,#eee);border:1px solid #ccc;margin:10px auto;padding:10px;-webkit-border-radius:10px;-moz-border-radius:10px;border-radius:10px;}
+.chat h3{margin:0;font-size:1em;font-weight:normal}
+.chat h5{color:#666;font-weight:normal;font-size:.8em;padding:5px 0;margin:0}
+.chat .message,.chat .chatlog{border:none;-webkit-box-shadow:inset 0 0 2px #777;-moz-box-shadow:inset 0 0 2px #777;box-shadow:inset 0 0 2px #777;-webkit-border-radius:5px;-moz-border-radius:5px;border-radius:5px}
+.chat .message{width:990px;padding:5px;margin:0}
+.chat .chatlog{width:990px;height:245px;background-color:#fff;padding:5px;margin:5px 0;overflow:auto;}
+.chat .chatlog p{font-size:.9em;color:#000a68;padding:3px 9px;margin:0}
+.chat .chatlog pfirst-child{padding-top:9px}
+.chat .chatlog plast-child{padding-bottom:9px}
+#currentUser{height:1.4em;width:14em;-webkit-appearance:none;-webkit-box-shadow:1px 1px 1px #fff;-webkit-border-radius:.5em}
+#currentUser::-webkit-input-placeholder{font-style:italic}
+#currentUser input:-moz-placeholder{font-style:italic}
+#joinedChannel{height:2em;margin:20px;background:#fff;-webkit-appearance:none;-webkit-box-shadow:1px 1px 1px #fff;-webkit-border-radius:.5em}
+#joinedChannel::-webkit-input-placeholder{font-style:italic;text-shadow:0 0 2px #000}
+#joinedChannel input:-moz-placeholder{font-style:italic}
+#join{display:none;padding:30px}
+#buttons button{margin-top:10px;margin-left:50px;width:100px}
+.controls{float:left;width:100%;background:#fff;overflow:hidden;position:relative}
+.controls ul{clear:left;float:left;list-style:none;margin:0;padding:0;position:relative;left:50%;text-align:center}
+.controls li{display:block;float:left;list-style:none;margin-left:50px;padding:0;position:relative;right:50%}
+.controls p{height:1.8em;width:16.5em;background-color:#eee;background-image:-webkit-gradient(linear,left top,left bottom,from(#ddd),to(#eee));background-image:-moz-linear-gradient(top,#ddd,#eee);border:1px solid #ccc;margin:10px auto;padding:10px;-webkit-border-radius:10px;-moz-border-radius:10px;border-radius:10px;text-shadow:0 1px 0 rgba(255,255,255,0.80)}

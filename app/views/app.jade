@@ -1,0 +1,26 @@
+!!! 5
+html(lang="en")
+  head
+    != SocketStream
+    meta(charset="utf-8")
+    link(rel='stylesheet', href = 'http://fonts.googleapis.com/css?family=Monofett|Pacifico')
+    title Constant Stream
+  body
+    #content
+      h1 Constant Stream
+      .controls
+        ul
+          li
+            p#response ...
+          li
+            p#user
+              input(id='currentUser', type='text', placeholder='user', autocomplete='off')
+          li
+            p#status ...
+          
+      form.join(onsubmit='return false')
+        input(id='joinedChannel', type='text', placeholder='channel', autocomplete='off')
+        button.add.button Join
+
+      div#tabs
+        nav.tabs

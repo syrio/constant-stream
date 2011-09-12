@@ -1,0 +1,235 @@
+
+	/* Reset */
+	html, body, div, span, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, abbr, address, cite, code, del, dfn, em, img, ins, kbd, q, samp, small, strong, sub, sup, var, b, i, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, figcaption, figure, footer, header, hgroup, menu, nav, section, summary, time, mark, audio, video { margin: 0; padding: 0; border: 0; font-size: 100%; font: inherit; vertical-align: baseline; }
+	article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section { display: block; }
+	blockquote, q { quotes: none; }
+	blockquote:before, blockquote:after,
+	q:before, q:after { content: ''; content: none; }
+	ins { background-color: #ff9; color: #000; text-decoration: none; }
+	mark { background-color: #ff9; color: #000; font-style: italic; font-weight: bold; }
+	del { text-decoration: line-through; }
+	abbr[title], dfn[title] { border-bottom: 1px dotted; cursor: help; }
+	table { border-collapse: collapse; border-spacing: 0; }
+	hr { display: block; height: 1px; border: 0; border-top: 1px solid #ccc; margin: 1em 0; padding: 0; }
+	input, select { vertical-align: middle; }
+	body { font:13px/1.231 sans-serif; *font-size:small; } 
+	select, input, textarea, button { font:99% sans-serif; }
+	pre, code, kbd, samp { font-family: monospace, sans-serif; }
+	html { overflow-y: scroll; }
+	a:hover, a:active { outline: none; }
+	ul, ol { margin-left: 2em; }
+	ol { list-style-type: decimal; }
+	nav ul, nav li { margin: 0; list-style:none; list-style-image: none; }
+	small { font-size: 85%; }
+	strong, th { font-weight: bold; }
+	td { vertical-align: top; }
+	sub, sup { font-size: 75%; line-height: 0; position: relative; }
+	sup { top: -0.5em; }
+	sub { bottom: -0.25em; }
+	pre { white-space: pre; white-space: pre-wrap; word-wrap: break-word; padding: 15px; }
+	textarea { overflow: auto; }
+	.ie6 legend, .ie7 legend { margin-left: -7px; } 
+	input[type="radio"] { vertical-align: text-bottom; }
+	input[type="checkbox"] { vertical-align: bottom; }
+	.ie7 input[type="checkbox"] { vertical-align: baseline; }
+	.ie6 input { vertical-align: text-bottom; }
+	label, input[type="button"], input[type="submit"], input[type="image"], button { cursor: pointer; }
+	button, input, select, textarea { margin: 0; }
+	input:valid, textarea:valid   {  }
+	input:invalid, textarea:invalid { border-radius: 1px; -moz-box-shadow: 0px 0px 5px red; -webkit-box-shadow: 0px 0px 5px red; box-shadow: 0px 0px 5px red; }
+	.no-boxshadow input:invalid, .no-boxshadow textarea:invalid { background-color: #f0dddd; }
+	::-moz-selection{ background: #FF5E99; color:#fff; text-shadow: none; }
+	::selection { background:#FF5E99; color:#fff; text-shadow: none; }
+	a:link { -webkit-tap-highlight-color: #FF5E99; }
+	button {  width: auto; overflow: visible; }
+	.ie7 img { -ms-interpolation-mode: bicubic; }
+	body, select, input, textarea {  color: #444; }
+	h1, h2, h3, h4, h5, h6 { font-weight: bold; }
+	a, a:active, a:visited { color: #607890; text-decoration: none; }
+	a:hover { color: #036; }
+	
+	/* Style */
+	
+	#content { padding: 25px; background: #FFF; }
+	
+	#tabs {
+    border: 1px solid #DEDEDE;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+    height: 450px;
+    position: relative;
+		overflow: hidden;
+    }
+	.tabs-content {
+	  display: none; 
+		padding: 32px;
+		height: 365px;
+		overflow: hidden;
+		position: absolute;
+		bottom: 0;
+		left: 0;
+	}
+	.tabs {
+		overflow: hidden; 
+		background: #e1e1e1; 
+		background: -moz-linear-gradient(center top , #f2f2f2, #e1e1e1); 
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#f2f2f2), color-stop(100%,#e1e1e1)); 
+		-moz-border-radius: 4px 4px 0 0; 
+		-webkit-border-radius: 4px 4px 0 0; 
+		border-radius: 4px 4px 0 0; 
+		-webkit-box-shadow: 0 1px 0 #FFF inset; 
+		-moz-box-shadow: 0 1px 0 #FFF inset; 
+		box-shadow: 0 1px 0 #FFF inset;
+	}
+	.tabs a {
+		display: block; 
+		float: left; 
+		font: 15px/35px Arial, Helvetica, Sans-serif; 
+		padding: 0 5px 0 40px;
+		color: #999; 
+		text-shadow: 0 1px 0 #FFF;
+		border-left: solid 1px rgba(0,0,0,0.05);
+		border-right: solid 1px rgba(255,255,255,0.7);
+		position: relative;
+		overflow: hidden;
+	}
+	.tabs a:first-child {
+		border-left-width: 0;
+	}
+	.tabs a:last-child {
+		border-right-width: 0;
+	}
+	.tabs a:after {
+		content: '§';
+		position: absolute;
+		top: 0;
+		left: 10px;
+		line-height: 21px;
+		font-size: 10px;
+		width: 21px; 
+		text-align: center; 
+		margin: 7px 10px 5px 0; 
+		background: #000; 
+		font-size: 12px; 
+		-moz-border-radius: 21px; 
+		-webkit-border-radius: 21px; 
+		border-radius: 21px; 
+		background: #bdbdbd; 
+		background: -moz-linear-gradient(center top , #d4d4d4, #bdbdbd); 
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#d4d4d4), color-stop(100%,#bdbdbd)); 
+		-webkit-box-shadow: 0 1px 0 0 #FFF, 0 1px 0 0 rgba(0,0,0,0.25) inset; 
+		-moz-box-shadow: 0 1px 0 0 #FFF, 0 1px 0 0 rgba(0,0,0,0.25) inset; 
+		box-shadow: 0 1px 0 0 #FFF, 0 1px 0 0 rgba(0,0,0,0.25) inset; 
+		text-shadow: 0 1px 0 #999; 
+		color: #ffffff;
+	}
+	.tabs a:hover {
+		background: #FFF;
+		border-left-color: #CCC;
+	}
+	.tabs a:hover:after {
+		background: #038bd5; 
+		background: -moz-linear-gradient(center top , #2dc3fc, #038bd5); 
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#2dc3fc), color-stop(100%,#038bd5)); 
+		text-shadow: 0 1px 0 #096c9e; 
+		-webkit-box-shadow: 0 1px 0 0 rgba(255,255,255,0.45), 0 1px 0 0 rgba(0, 0, 0, 0.25) inset, 0 0 5px 0 rgba(0,148,255,0.85); 
+		-moz-box-shadow: 0 1px 0 0 rgba(255,255,255,0.45), 0 1px 0 0 rgba(0, 0, 0, 0.25) inset, 0 0 5px 0 rgba(0,148,255,0.85); 
+		box-shadow: 0 1px 0 0 rgba(255,255,255,0.45), 0 1px 0 0 rgba(0, 0, 0, 0.25) inset, 0 0 5px 0 rgba(0,148,255,0.85)
+	}
+	
+	.tabs-items {
+	  float: left;
+    width: 100%;
+    background: #fff;
+    overflow: hidden;
+    position: relative;
+	}
+
+  #tabs-items-list {
+    clear: left;
+    float: left;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    position: relative; 
+    left: 50%; 
+    text-align: center; 
+  }
+  
+  #tabs-items-item {
+    display: block;
+    float: left;
+    list-style: none;
+    padding: 0;
+    position: relative;
+    right: 50%;
+  }
+  
+  .member {
+		display: block; 
+		float: left; 
+		font: 15px/35px Arial, Helvetica, Sans-serif; 
+		padding: 0 40px 0 50px;
+		color: #999; 
+		text-shadow: 0 1px 0 #FFF;
+		border-left: solid 1px rgba(0,0,0,0.05);
+		border-right: solid 1px rgba(255,255,255,0.7);
+		position: relative;
+		overflow: hidden;
+	}
+
+  .member:after {
+		content: "@";
+		position: absolute;
+		top: 0;
+		left: 10px;
+		line-height: 21px;
+		font-size: 10px;
+		width: 21px; 
+		text-align: center; 
+		margin: 7px 10px 5px 0; 
+		background: #000; 
+		font-size: 12px; 
+		-moz-border-radius: 21px; 
+		-webkit-border-radius: 21px; 
+		border-radius: 21px; 
+		background: #bdbdbd; 
+		background: -moz-linear-gradient(center top , #d4d4d4, #bdbdbd); 
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#d4d4d4), color-stop(100%,#bdbdbd)); 
+		-webkit-box-shadow: 0 1px 0 0 #FFF, 0 1px 0 0 rgba(0,0,0,0.25) inset; 
+		-moz-box-shadow: 0 1px 0 0 #FFF, 0 1px 0 0 rgba(0,0,0,0.25) inset; 
+		box-shadow: 0 1px 0 0 #FFF, 0 1px 0 0 rgba(0,0,0,0.25) inset; 
+		text-shadow: 0 1px 0 #999; 
+		color: #ffffff;
+	}
+  .member:hover {
+		background: #FFF;
+		border-left-color: #CCC;
+	}
+  .member:hover:after {
+		background: #038bd5; 
+		background: -moz-linear-gradient(center top , #2dc3fc, #038bd5); 
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#2dc3fc), color-stop(100%,#038bd5)); 
+		text-shadow: 0 1px 0 #096c9e; 
+		-webkit-box-shadow: 0 1px 0 0 rgba(255,255,255,0.45), 0 1px 0 0 rgba(0, 0, 0, 0.25) inset, 0 0 5px 0 rgba(0,148,255,0.85); 
+		-moz-box-shadow: 0 1px 0 0 rgba(255,255,255,0.45), 0 1px 0 0 rgba(0, 0, 0, 0.25) inset, 0 0 5px 0 rgba(0,148,255,0.85); 
+		box-shadow: 0 1px 0 0 rgba(255,255,255,0.45), 0 1px 0 0 rgba(0, 0, 0, 0.25) inset, 0 0 5px 0 rgba(0,148,255,0.85)
+	}
+  
+  
+/* place this here since members a elements inherit all of their styling 
+   from #tabs-items a styling, we just change the html entity to @' */
+
+  .tabs-close {
+    border-bottom-left-radius: 2px 2px;
+    border-bottom-right-radius: 2px 2px;
+    border-top-left-radius: 2px 2px;
+    border-top-right-radius: 2px 2px;
+    font-size: 0.7em;
+    line-height: 150%;
+    margin-left: 4px;
+    padding-left: 3px;
+    vertical-align: top;
+    cursor: inherit;
+  }
