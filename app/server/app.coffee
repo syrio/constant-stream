@@ -45,7 +45,7 @@ exports.actions =
     # if user reloaded it's browser, assume he wants to start over, disconnect his irc connection and connect a new one
     if current_sessions[@session.id]?
       if current_sessions[@session.id].irc?
-        current_sessions[@session.id].irc?.disconnect?()
+        current_sessions[@session.id].irc.disconnect()
       delete current_sessions[@session.id]
 
     session = @session
