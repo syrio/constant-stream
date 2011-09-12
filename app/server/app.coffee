@@ -47,7 +47,7 @@ exports.actions =
       if current_sessions[@session.id].irc?
         current_sessions[@session.id].irc.disconnect()
       delete current_sessions[@session.id]
-
+        
     session = @session
     
     irc_client = new helpers.StreamIrc SS.config.irc.server, user, (err) ->
