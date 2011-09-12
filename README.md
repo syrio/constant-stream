@@ -117,7 +117,7 @@ Upon reloading the app by refreshing the page or closing and reopening the brows
 
 ### Browser compatibility
 
-Tested to work with Google Chrome 13.0.780.220. Basic sanity tests were done with Firefox 7.0.
+Tested to work with Google Chrome 13.0.780.220. Basic sanity tests were done with Firefox 7.0 and Safari Version 5.0.2 (6533.18.5).
 
 ### Client files
 
