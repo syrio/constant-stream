@@ -34,20 +34,25 @@ describe 'Server helpers', ->
         
     describe 'Joining a channel', ->
       beforeEach ->
-        @client = join: sinon.spy(), addListener: sinon.spy()
+        @client = join: sinon.spy(), addListener: sinon.spy(), send: sinon.spy()
         sinon.stub(irc, 'Client').returns(@client)
+        @org_setInterval = setInterval
+        global.setInterval = sinon.spy()
         @receivedMessage = (from, message) ->
         stream_irc = new helpers.StreamIrc('some_server', 'some_user')
         stream_irc.join('some_channel', @receivedMessage)
         stream_irc.join('#another_channel', @receivedMessage)        
       afterEach -> 
-        irc.Client.restore()  
+        irc.Client.restore()
+        global.setInterval = @org_setInterval
       it 'should join the irc channel if no hashtag was provided', ->
         expect(@client.join).toHaveBeenCalledWith('#some_channel')
       it 'should join an irc channel if a hahstag ws provided', ->
         expect(@client.join).toHaveBeenCalledWith('#another_channel')        
       it 'should listen to messages on the joined irc channel', ->
         expect(@client.addListener).toHaveBeenCalledWithExactly('message#some_channel', @receivedMessage)
+      it 'should set a names fetcher to run every set interval', ->
+        expect(setInterval).toHaveBeenCalled()
         
     describe 'Leaving a channel', ->
       beforeEach ->
@@ -124,16 +129,25 @@ describe 'Server helpers', ->
           if 'names' == event
             handler('#some_chan', { 'some_nick' : '@', 'another_nick' : '',  '' : '' } )
         sinon.stub(irc, 'Client').returns({on:@on_fake})
+        @orgClearInterval = clearInterval
+        global.clearInterval = sinon.spy()
         @stream_irc = new helpers.StreamIrc()
+        @stream_irc.channels = '#some_chan': names_fetcher_id : 12345
         @handler = sinon.spy()
       afterEach ->
         irc.Client.restore()
+        global.clearInterval = @orgClearInterval
       it 'should call the given handler with the bare channel name and fully qualified members names', ->
         @stream_irc.members(@handler)
         expect(@handler).toHaveBeenCalledWith('some_chan')
         members = @handler.args[0][1]
         expect(members[0].name).toEqual('@some_nick')
         expect(members[1].name).toEqual('another_nick')
+      it 'should clear the members names fetcher that was executed to run per interval on @join (if it exists)', ->
+        @stream_irc.members(@handler)
+        expect(clearInterval).toHaveBeenCalledWith(12345)
+        expect(@stream_irc.channels['#some_chan']?.names_fetcher_id).toBeUndefined()
+        
         
     describe 'Getting current topic notification', ->
       beforeEach ->

@@ -46,11 +46,14 @@ exports.init = ->
       $(".#{channel}").find('.topic').text topic  
 
     SS.events.on "#{channel}:currentMembers", (members) ->
-      # clear existing names
-      channel_members.children().remove()
-      add = (member) -> channel_members.append($('#tabs-members').tmpl(member:member))
-      # don't add duplicates
-      add member for member in members when channel_members.find("li:contains(#{member.name})").length == 0
+      inserted_members = []
+      member_ui_list_html = ''
+      for member in members
+        if member not in inserted_members
+          member_ui_list_html += $('#tabs-members').tmpl(member:member).html()
+          inserted_members.push member
+      channel_members.replaceWith(member_ui_list_html)
+
   
   show_channel = (channel) ->
     $(".visible").css('display', 'none')

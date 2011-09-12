@@ -96,6 +96,7 @@ exports.actions =
     irc_client.join channel, (from, message) ->
       data_observer.observedNewData session, { channel: channel, message: { text: message, user: from } }
       
+      
     cb true
     
   leaveChannel: (channel, cb) ->
