@@ -1,4 +1,4 @@
-# constant-stream - using SocketStream as a solution to the traveling IRC-man problem
+# constant-stream - SocketStream as a solution to the traveling IRC-man problem
 
 ## Introduction
 
@@ -123,7 +123,6 @@ Tested to work with Google Chrome 13.0.780.220. Basic sanity tests were done wit
 
 The client-side code is stored in the app/client/app.coffee file.
 
-```
 
 ## Tests
 
