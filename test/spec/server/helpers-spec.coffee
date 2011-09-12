@@ -51,7 +51,7 @@ describe 'Server helpers', ->
         
     describe 'Leaving a channel', ->
       beforeEach ->
-        @client = part: sinon.spy()
+        @client = part: sinon.spy(), removeAllListeners: sinon.spy()
         sinon.stub(irc, 'Client').returns(@client)
         stream_irc = new helpers.StreamIrc('some_server', 'some_user')
         stream_irc.leave('some_channel', ->)
@@ -62,7 +62,11 @@ describe 'Server helpers', ->
         expect(@client.part).toHaveBeenCalledWith('#some_channel')
       it 'should leave an irc channel if a hahstag ws provided', ->
         expect(@client.part).toHaveBeenCalledWith('#another_channel')        
-
+      it 'should remove channel specific listenrs', ->
+        expect(@client.removeAllListeners).toHaveBeenCalledWith('join#some_channel')
+        expect(@client.removeAllListeners).toHaveBeenCalledWith('join#another_channel')
+        expect(@client.removeAllListeners).toHaveBeenCalledWith('message#some_channel')
+        expect(@client.removeAllListeners).toHaveBeenCalledWith('message#another_channel')
         
     describe 'Saying a message', ->
       afterEach ->

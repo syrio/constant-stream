@@ -9,7 +9,7 @@ session_manager = new helpers.SessionManager(storage)
 
 session_manager.on 'timeout', (session_id) ->
   current_sessions[session_id]?.irc?.disconnect?()
-  delete current_sessions[@session.id]
+  delete current_sessions[session_id]
 
 session_manager.on 'reconnect', (session) ->
   # ask for updated members list for each channel upon reconnection of an online session
