@@ -13,7 +13,7 @@ session_manager.on 'timeout', (session_id) ->
 
 session_manager.on 'reconnect', (session) ->
   # ask for updated members list for each channel upon reconnection of an online session
-  # when the server will return, IrcStream (irc_client) will fire the 'names' event and handlers we set in actions.init will be fired
+  # when the server will return, IrcStream (irc_client) will fire the 'names' event and handlers set in actions.init will be fired
   irc_client = current_sessions[session?.id]?.irc
   return unless irc_client?
   for channel in session.channels
@@ -25,11 +25,11 @@ current_sessions = {}
 exports.actions =
   
   init: (user, cb) ->
-
+    
     # no real need for authentication, just using SocketStream baked-in users pub sub for publishing session specific events
     @session.setUserId(@session.id)
     
-    # metaprogramming the events and handlers to match one another by the members of the Manger classes is defiantly a possibility
+    # metaprogramming the events and handlers to match one another by the members of the Manger classes would be nice
     channel_handlers =
       newMember:      [channel.handleNewMember],
       leavingMember:  [channel.handleLeavingMember],
@@ -41,15 +41,22 @@ exports.actions =
     data_observer = new helpers.DataObserver({ 
       newData: [online.handleNewData, offline.handleNewData],
       newPrivateData: [online.handleNewPrivateData, offline.handleNewPrivateData]}, @session)
-    
-    # if user reloaded it's browser, assume he wants to start over, disconnect his irc connection and connect a new one
+
+    # if user reloaded it's browser, assume he wants to start over
     if current_sessions[@session.id]?
       if current_sessions[@session.id].irc?
+        # disconnect the irc connection
         current_sessions[@session.id].irc.disconnect()
+      # unsubscribe from SocketStream PubSub channels
+      for pubsub_channel in @session.channels
+        @session.channel.unsubscribe pubsub_channel
+      # delete the old session
       delete current_sessions[@session.id]
-        
+    
+    # store session data in closure for the following event handlers
     session = @session
     
+    # intiate new irc connection on behalf of the user
     irc_client = new helpers.StreamIrc SS.config.irc.server, user, (err) ->
       return cb { error: err, message: "Could not connect to irc server: #{err}" } if err? 
       cb { message: "Ready!" }
@@ -61,9 +68,10 @@ exports.actions =
         data_observer.observedNewPrivateData session, { message: { text: message, from: from } }
     
     current_sessions[@session.id] = 
-      irc: irc_client, channel_observer: channel_observer, session_observer: session_observer, data_observer: data_observer
+      irc: irc_client, channel_observer: channel_observer, 
+      session_observer: session_observer, data_observer: data_observer
 
-  
+
   # Quick Chat Demo
   sendMessage: (channel, message, cb) ->
     # make sure session and irc client are good
@@ -76,10 +84,10 @@ exports.actions =
   joinChannel: (channel, cb) ->
     
     irc_client = current_sessions[@session.id]?.irc
-    channel_observer = current_sessions[@session.id].channel_observer
-    data_observer = current_sessions[@session.id].data_observer
-    # make sure session objects are good    
-    return cb false unless irc_client? and channel_observer? and data_observer?
+    channel_observer = current_sessions[@session.id]?.channel_observer
+    data_observer = current_sessions[@session.id]?.data_observer
+    # make sure session objects are good
+    return cb(false) unless (irc_client? and channel_observer? and data_observer?)
     
     bare_channel = channel.replace(/@|#/, '')
     
@@ -95,8 +103,7 @@ exports.actions =
         channel_observer.observedChangingMember session, { channel: channel, member: new_name: new_name, old_name: old_name }
     irc_client.join channel, (from, message) ->
       data_observer.observedNewData session, { channel: channel, message: { text: message, user: from } }
-      
-      
+        
     cb true
     
   leaveChannel: (channel, cb) ->
