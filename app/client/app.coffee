@@ -61,8 +61,8 @@ exports.init = ->
       channel_ui.find('.members-items-list').find("a:contains(#{member.old_name})").fadeToggle(-> $(this).text("#{member.new_name}").fadeToggle())
 
     SS.events.on "#{channel}:currentTopic", (topic) =>
-      topic = "#{topic[0..150]} ..." if topic.length > 150 # limit topic length if necessary
-      channel_ui.find('.topic').text topic.replace(/\n/g, '')
+      formatted_topic = topic.replace(/\n/g, '').slice(0, 145) + ' ...'
+      channel_ui.find('.topic').text formatted_topic
 
     SS.events.on "#{channel}:currentMembers", (members) =>
       # clear cache entries as a full updated list just arrived

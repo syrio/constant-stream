@@ -50,7 +50,7 @@ exports.config =
     interval: 999
 
   irc:
-    #server: 'irc.freenode.net' # example server
-    server:       "localhost" # work with local server liked ircdjs
+    server: 'irc.freenode.net' # example server
+    #server:       "localhost" # work with local server liked ircdjs
     name:         "constant-stream"
     real_name:    "IRC streamer"
