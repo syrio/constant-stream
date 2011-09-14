@@ -16,11 +16,24 @@ exports.init = ->
   
   subscribe_to_channel_events =  (channel, user) ->
     
-    channel_members = $(".#{channel}").find('.members ul')
+    class MembersCache 
+      constructor: ->
+        @cache = {}
+      add: (member) ->
+        @cache[member] = ''
+      in: (member) ->
+        @cache[member]?
+      clearall: ->
+        @cache = {}
+      clear: (member) ->
+        delete @cache[member]
+        
+    existing_members_names = new MembersCache()
+    channel_ui = $(".#{channel}")
     
     SS.events.on "#{channel}:newMessage", (message) ->
       message_view = $("<p><strong>#{message.user}:</strong> #{message.text}</p>")
-      chatlog = $(".#{channel}").find('.chatlog')
+      chatlog = channel_ui.find('.chatlog')
       message_view.appendTo(chatlog)
       # dont annoy user while he is obviously reading by suddenly moving the scroll bar to the bototm
       unless Math.abs(chatlog[0].scrollHeight - chatlog[0].scrollTop) > 350 
@@ -29,30 +42,41 @@ exports.init = ->
       
     SS.events.on "#{channel}:newMember", (member) ->
       return if member.name == user
-      return if channel_members.find("li:contains(#{member.name})").length > 0
-      channel_members.append($('#tabs-members').tmpl(member:member))
+      return if existing_members_names.in(member.name)
+      # add to cache
+      existing_members_names.add member.name
+      # show on UI
+      channel_ui.find('.members-items-list').append($('#tabs-members').tmpl(member:member))
 
     SS.events.on "#{channel}:leavingMember", (member) ->
+      return unless existing_members_names.in(member.name)
+      # clear from cache
+      existing_members_names.clear member.name
       # delte member from the members list by fading out and removing when the fade out ends
-      channel_members.find("li:contains(#{member.name})").fadeOut(-> $(this).remove())
+      channel_ui.find('.members-items-list').find("li:contains(#{member.name})").fadeOut(-> $(this).remove())
 
     SS.events.on "#{channel}:changingMember", (member) ->
+      return unless existing_members_names.in(member.old_name)
       # delte member from the members list by fading out and removing when the fade out ends
-      channel_members.find("li:contains(#{member.old_name})").fadeToggle().text("#{member.new_name}").fadeToggle()
+      channel_ui.find('.members-items-list').find("a:contains(#{member.old_name})").fadeToggle(-> $(this).text("#{member.new_name}").fadeToggle())
 
-    SS.events.on "#{channel}:currentTopic", (topic) ->
+    SS.events.on "#{channel}:currentTopic", (topic) =>
       topic = "#{topic[0..150]} ..." if topic.length > 150 # limit topic length if necessary
       topic.replace(/\\n|\\r/, '')
-      $(".#{channel}").find('.topic').text topic  
+      channel_ui.find('.topic').text topic  
 
-    SS.events.on "#{channel}:currentMembers", (members) ->
-      inserted_members = []
+    SS.events.on "#{channel}:currentMembers", (members) =>
+      # clear cache entries as a full updated list just arrived
+      existing_members_names.clearall()
+      
       member_ui_list_html = ''
       for member in members
-        if member not in inserted_members
-          member_ui_list_html += $('#tabs-members').tmpl(member:member).html()
-          inserted_members.push member
-      channel_members.replaceWith(member_ui_list_html)
+        unless existing_members_names.in(member.name)
+          member_ui_list_html += "<li>#{$('#tabs-members').tmpl(member:member).html()}</li>"
+          # add to cache
+          existing_members_names.add member.name
+      # show on UI
+      channel_ui.find('.members-items-list').replaceWith("<ul class='members-items-list'>#{member_ui_list_html}</ul>")
 
   
   show_channel = (channel) ->

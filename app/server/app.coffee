@@ -115,5 +115,4 @@ exports.actions =
     # unsubscribe from the SocketStream channel matching this IRC channel
     @session.channel.unsubscribe channel
 
-
     cb true
