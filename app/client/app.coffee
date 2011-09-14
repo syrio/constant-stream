@@ -62,8 +62,7 @@ exports.init = ->
 
     SS.events.on "#{channel}:currentTopic", (topic) =>
       topic = "#{topic[0..150]} ..." if topic.length > 150 # limit topic length if necessary
-      topic.replace(/\\n|\\r/, '')
-      channel_ui.find('.topic').text topic  
+      channel_ui.find('.topic').text topic.replace(/\\n|\\r/, '')
 
     SS.events.on "#{channel}:currentMembers", (members) =>
       # clear cache entries as a full updated list just arrived
