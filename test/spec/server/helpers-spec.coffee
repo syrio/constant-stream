@@ -261,6 +261,17 @@ describe 'Server helpers', ->
         expect(R.srem).toHaveBeenCalledWith('some:set', 'some_item')
         expect(R.srem).toHaveBeenCalledWith('some:set', 'a_item')
 
+    describe 'Adding a single string key/value', ->
+      beforeEach ->
+        global.R = 
+          set: sinon.spy()
+      afterEach ->
+        global.R = {}
+      it 'should add it to the underlying storage', ->
+        storage = new helpers.StreamStorage()
+        storage.store('some:key', 'some_value')
+        expect(R.set).toHaveBeenCalledWith('some:key', 'some_value')
+
     describe 'Removing an entire key', ->
       beforeEach ->
         global.R = 
@@ -303,6 +314,19 @@ describe 'Server helpers', ->
         expect(members[1]).toEqual 'a_member'        
         expect(R.lrange).toHaveBeenCalledWith('some:list', 0, -1)
 
+  describe 'Getting the value from a given string key', ->
+    beforeEach ->
+      global.R = 
+        type: sinon.stub().yields(0, 'string')
+        get: sinon.stub().yields(0, 'some_value')
+    afterEach ->
+      global.R = {}
+    it 'should callback true if it is', ->
+      storage = new helpers.StreamStorage()
+      # Vows.js style
+      storage.get 'some:key', (err, value) ->
+        expect(value).toEqual 'some_value'
+        expect(R.get).toHaveBeenCalledWith('some:key')
 
   describe 'Checking if a given value is a member of a given set', ->
     beforeEach ->
@@ -499,19 +523,25 @@ describe 'Server helpers', ->
             expect(@manager.emit).toHaveBeenCalledWithExactly('reconnect', {id: 1})
       
     describe 'handling a session disconnection', ->
-      it 'should store the session id in the offline sessions list', -> 
+      it 'should store the session id in the offline sessions list and store the session disconnection time', -> 
         runs ->
-          storage = { sstore: sinon.stub(), list: sinon.spy(), get: sinon.stub().yields(0, ['some_channel', 'a_channel']) }
+          storage = { sstore: sinon.stub(), store: sinon.stub(), list: sinon.spy(), get: sinon.stub().yields(0, ['some_channel', 'a_channel']) }
           disconnected_session = {id : 1}
+          clock = sinon.useFakeTimers(1234567890000)
           manager = new helpers.SessionManager(storage)
-          manager.handleDisconnect(disconnected_session)      
+          manager.handleDisconnect(disconnected_session)
           expect(storage.sstore).toHaveBeenCalledWithExactly('offline:sessions', 1)
+          expect(storage.store).toHaveBeenCalledWithExactly('offline:1:at:1234567860', 1)
+          clock.restore()
 
     describe 'handling a session reconnection', ->
         beforeEach ->
           global.SS = publish: user: sinon.spy()
           @storage = 
-            remove: sinon.spy(),
+            keys: (key, cb) ->
+              if key == 'offline:1:at:*'
+                return cb 0, ['offline:1:at:1234567890']
+            remove: sinon.spy()
             get: (key, cb) ->
               if key == 'offline:1:some_channel:messages'
                 return cb 0, [JSON.stringify({ text: 'some_message' })]
@@ -544,6 +574,11 @@ describe 'Server helpers', ->
           runs ->
             @manager.handleReconnect(@reconnected_session)
             expect(@storage.remove).toHaveBeenCalledWith('offline:sessions', 1)
+        it 'should remove the session offline timestamp key indicating when it went offline', ->
+          runs ->
+            @manager.handleReconnect(@reconnected_session)
+            expect(@storage.remove).toHaveBeenCalledWith('offline:1:at:1234567890')
+
 
 
     describe 'handling a session channel subscription', ->
@@ -564,10 +599,9 @@ describe 'Server helpers', ->
 
     describe 'handling a session heartbeat', ->
       beforeEach ->
-        global.SS = config : redis : key_prefix : 'ss'
         @storage = 
           keys: (err, cb) -> 
-            cb(0, ["#{SS.config.redis.key_prefix}:online:at:1234567456", "#{SS.config.redis.key_prefix}:online:at:1234567123"])
+            cb(0, ["offline:1:at:1234567456", "offline:2:at:1234567123"])
           get: (err, cb) -> 
             cb(0, ['1', '2'])  
           remove: sinon.spy()
@@ -582,8 +616,8 @@ describe 'Server helpers', ->
       it 'should emit a heartbeat event for the period', ->
         expect(@emit_spy).toHaveBeenCalledWith('hearbeat', 1234567)
       it 'should remove the SocketStream last login entry from storage', ->
-        expect(@storage.remove).toHaveBeenCalledWith("#{SS.config.redis.key_prefix}:online:at:1234567456")
-        expect(@storage.remove).toHaveBeenCalledWith("#{SS.config.redis.key_prefix}:online:at:1234567123")
+        expect(@storage.remove).toHaveBeenCalledWith("offline:1:at:1234567456")
+        expect(@storage.remove).toHaveBeenCalledWith("offline:2:at:1234567123")
         
     describe 'handling a session tiemout', ->
       it 'should remove all session structures from storage', ->

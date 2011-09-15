@@ -37,20 +37,20 @@ exports.config =
   
   
   # for SocketStream v0.2.0 beta 2
-  users:
-    online:
-      keep_historic: true
+  #users:
+  #  online:
+  #    keep_historic: true
   # for SocketStream v0.2.0 relase
-  users_online:
-    keep_historic: true
+  #users_online:
+  #  keep_historic: true
   
   # for expiration of lost sessions
   offline_expire:
     timeout: 24*60
-    interval: 999
+    interval: 990
 
   irc:
-    server: 'irc.freenode.net' # example server
-    #server:       "localhost" # work with local server liked ircdjs
+    #server: 'irc.freenode.net' # example server
+    server:       "localhost" # work with local server liked ircdjs
     name:         "constant-stream"
     real_name:    "IRC streamer"

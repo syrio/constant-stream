@@ -61,8 +61,6 @@ It uses these events to keep an updated representation of the state of it's clie
 
 Messages are being sent using SocketStream users Pub/Sub, even though there is no authentication involved with constant-stream. This is done by assigning (using the @session.setUserId function) each unique session (that is, a user using it's browser to connect to constant-stream) as the user id that match with that session, essentially mimicking a user login for this session. SocketStream users Pub/Sub allows the server to send messages to specific users and this comes handy when you have multiple constant-stream users that are connected to the same channels as the other and with private messaging.
 
-Since we are now using SocketStream users feature, even though the server doesn't uses the built-in users-online mechanism to calculate who is online and who isn't offline, it does uses it to conclude which users have been traveling for too long and have timeout their connection (see the timeout configuration and the client side sections for more general details).
-
 ### External libs
 
 Redis was mentioned briefly since pretty much baked-in into SocketStream. It is worth mentioning only because constant-stream wraps it by using a small helper class (see StreamStorage in the helpers module) around it to provide a simple and decoupled storage interface that is easily testable.
