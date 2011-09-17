@@ -185,7 +185,7 @@ exports.init = ->
     
     bare_channel = channel.replace(/@|#/, '')
     
-    channel_members_items = $(".#{bare_channel}").find('.members ul')
+    channel_members_items = $(".#{bare_channel}").find('.members')
     channel_members_items.click (event) ->
       member = event.target.text
       return unless member?
