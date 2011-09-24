@@ -13,6 +13,8 @@ SS.events.remove = (name) ->
 # This method is called automatically when the websocket connection is established. Do not rename/delete
 exports.init = ->
   
+  name_strip = (name) ->
+    name.replace /\.|\+|@|#/g, ''
   
   subscribe_to_channel_events =  (channel, user) ->
     
@@ -29,16 +31,20 @@ exports.init = ->
         delete @cache[member]
         
     existing_members_names = new MembersCache()
-    channel_ui = $(".#{channel}")
+    bare_channel = name_strip channel
+    channel_ui = $(".tabs-content.#{bare_channel}.channel")
     
     SS.events.on "#{channel}:newMessage", (message) ->
       message_view = $("<p><strong>#{message.user}:</strong> #{message.text}</p>")
       chatlog = channel_ui.find('.chatlog')
       message_view.appendTo(chatlog)
+
       # dont annoy user while he is obviously reading by suddenly moving the scroll bar to the bototm
       unless Math.abs(chatlog[0].scrollHeight - chatlog[0].scrollTop) > 350 
         # none moved the scroll bar to a custom location up away (i.e further than 350), so scroll down
         chatlog[0].scrollTop = chatlog[0].scrollHeight
+      
+      set_tab_unread(channel, 'channel')
       
     SS.events.on "#{channel}:newMember", (member) ->
       return if member.name == user
@@ -78,13 +84,15 @@ exports.init = ->
       channel_ui.find('.members-items-list').replaceWith("<ul class='members-items-list'>#{member_ui_list_html}</ul>")
 
   
-  show_channel = (channel) ->
-    $(".visible").css('display', 'none')
-    bare_channel = channel.replace(/@|#/, '')          
-    invisble_chatbox = $(".#{bare_channel}")
-    invisble_chatbox.css('display', 'block')
-    invisble_chatbox.addClass('visible')
-    invisble_chatbox.find('.message').focus()
+  show_tab = (name, type) ->
+    $('.visible').removeClass('visible')
+    bare_name = name_strip(name)
+    invisible_tab = $(".tabs-content.#{bare_name}.#{type}")
+    invisible_tab.addClass('visible')
+    invisible_tab.find('.message').focus()
+    
+    # remove the unread styling on the tab link (if it exsits)
+    $(".tabs-link.#{bare_name}.#{type}").css('color', '#999')
   
   update_tab_list = ->
     # bind a handler for clicking on a the channel in the channels names tabs-list
@@ -96,12 +104,16 @@ exports.init = ->
       unless event_text?
         return
   
-      channel = event_text.split(' ')[0]
-      bare_channel = channel.replace(/@|#/, '')
-      # remove the unread styling on the tab link (if it exsits)
-      $(event.target).css('color', '#999')
+      tab_name = event_text.split(' ')[0]
+      bare_tab_name = name_strip(tab_name)
+      
+      target = $(event.target)
+      
+      type = 'private' if target.hasClass 'private'
+      type = 'channel' if target.hasClass 'channel'
+
       # make the chatbox visible after user clicked on the channel name in the channels names tab-list
-      show_channel(bare_channel)
+      show_tab(bare_tab_name, type)
 
     $('.tabs-close').unbind('click')
     $('.tabs-close').click (event) ->
@@ -110,9 +122,13 @@ exports.init = ->
       # this sperates clicking 'x' to close tab from switching tabs
       event.stopPropagation()
       
-      tabs_link = $(event.target).parent('.tabs-link')
+      target = $(event.target)
+      type = 'private' if target.parent().hasClass 'private'
+      type = 'channel' if target.parent().hasClass 'channel'
+      
+      tabs_link = target.parent('.tabs-link')
       channel = tabs_link.text().split(' ')[0]
-      bare_channel = channel.replace(/@|#/, '')
+      bare_channel = name_strip(channel)
 
       SS.server.app.leaveChannel channel, (success) ->
         return unless success
@@ -125,22 +141,32 @@ exports.init = ->
         SS.events.remove "#{bare_channel}:currentTopic"
 
         prev_tab = tabs_link.prev()
-        tabs_link.remove()
-        $(event.target).remove()
-        $(".#{bare_channel}").remove()
+        prev_tab = tabs_link.next() if prev_tab.length == 0
         
-        $('#status').removeClass().addClass('success').text("Left channel ##{bare_channel}")
+        tabs_link.remove()
+        target.remove()
+
+        $(".tabs-content.#{bare_channel}.#{type}").remove()
+        
+        leaving_status = if type == 'private' then 'chat with ' else 'channel #'
+        status = "Left #{leaving_status}#{bare_channel}"
+        $('#status').removeClass().addClass('success').text(status)
         
         new_channel = prev_tab.text().split(' ')[0]
-        new_bare_channel = new_channel.replace(/@|#/, '')
-        show_channel(new_bare_channel)
+        new_bare_channel = name_strip(new_channel)
+        
+        prev_type = 'private' if prev_tab.hasClass 'private'
+        # last one wins, but there really shouldn't be a situation where a tab has both 'private' and 'channel' types
+        prev_type = 'channel' if prev_tab.hasClass 'channel'
+        
+        show_tab(new_bare_channel, prev_type)
   
-  add_tab_chatbox_handler = (channel, user) ->
+  add_tab_chatbox_handler = (channel, user, type) ->
     
-    bare_channel = channel.replace(/@|#/, '')
-    destination = channel.replace('@', '') # replace '@' for sending to ops users, don't touch '#' for channels
+    bare_channel = name_strip(channel)
+    destination = channel.replace(/\+|@/, '') # replace for sending to ops users, don't touch '#' or '.' for channels
     
-    form = $(".#{bare_channel}")
+    form = $(".tabs-content.#{bare_channel}.#{type}")
     # handle submiting a new message in the channel chatbox
     form.submit ->
       message = form.find('.message').val()
@@ -157,59 +183,74 @@ exports.init = ->
       else
         $('#status').removeClass().addClass('error').text('Oops! You must type a message first')
     
+
+  create_tab = (name, user, type) ->
+    bare_name = name_strip(name)
+
+    tab_nav = $('#tabs-nav').tmpl(channel: name)
+    tab_nav.addClass("#{bare_name}")
+    tab_nav.addClass(type)
+    $('.tabs').append(tab_nav)
+
+    tab_content = $('#tabs-content').tmpl()
+    tab_content.addClass("#{bare_name}")
+    tab_content.addClass(type)
+    $('#tabs').append(tab_content)
+
+    add_tab_chatbox_handler name, user, type
+    add_tab_members_handler name, user
   
   create_channel_tab = (channel, user) ->
-    tab_nav = $('#tabs-nav').tmpl(channel: channel)
-    $('.tabs').append(tab_nav)
-    tab_content = $('#tabs-content').tmpl()
-    $('#tabs').append(tab_content)
+    create_tab channel, user, 'channel'
     
-    # add a #{channel} class to identify the new tab with the channel name
-    bare_channel = channel.replace(/@|#/, '')
-    $('.tabs-content').last().addClass("#{bare_channel}")
-    
-    add_tab_chatbox_handler channel, user
-    add_tab_members_handler channel, user
-  
+  create_private_tab = (member, user) ->
+    create_tab member, user, 'private'
+
   is_there_such_channel_tab = (tab) ->
+    tab_element = name_strip(tab)
+    $(".tabs-link.#{tab_element}.channel").length > 0
+
+  is_there_such_private_tab = (tab) ->
+    tab_element = name_strip(tab)
+    $(".tabs-link.#{tab_element}.private").length > 0
     
-    $(".tabs-link:contains('#{tab}')").length > 0
-    
-  set_tab_unread = (tab) ->
-    unread = $(".tabs-link:contains('#{tab}')")
-    unless unread? and $(".#{tab}").hasClass('visible')
+  set_tab_unread = (tab, type) ->
+    tab_element = name_strip(tab)
+    tab = $(".tabs-content.#{tab_element}.#{type}")
+    unless tab.hasClass('visible')
       # force tab link text color change on unread
-      unread.css('color', '#C20303')
+      $(".tabs-link.#{tab_element}.#{type}").css('color', '#C20303')
   
   add_tab_members_handler = (channel, user) ->
     
-    bare_channel = channel.replace(/@|#/, '')
+    bare_channel = name_strip(channel)
     
-    channel_members_items = $(".#{bare_channel}").find('.members')
+    channel_members_items = $(".tabs-content.#{bare_channel}.channel").find('.members')
     channel_members_items.click (event) ->
       member = event.target.text
       return unless member?
-      unless is_there_such_channel_tab(member)
-        create_channel_tab(member, user)
+      unless is_there_such_private_tab(member)
+        create_private_tab(member, user)
         update_tab_list()
-      show_channel(member)
+      show_tab(member, 'private')
     
   handle_private_message = (to) ->
     SS.events.on "newPrivateMessage", (message) ->
       
-      bare_from = message.from.replace(/@|#/, '')
+      bare_from = name_strip(message.from)
       
-      unless is_there_such_channel_tab(bare_from)
+      unless is_there_such_private_tab(message.from)
         # create a tab for the user that sent us the priavte message if one doesn't already exist
         # explictly send the receives username, this might later passed to IRC and we need it be exact (not bare)
-        create_channel_tab(message.from, to)
+        create_private_tab(message.from, to)
         update_tab_list()
         
       message_view = $("<p>#{message.text}</p>")
-      chatlog = $(".#{bare_from}").find('.chatlog')
+      chatlog = $(".tabs-content.#{bare_from}.private").find('.chatlog')
       message_view.appendTo(chatlog)
+      chatlog[0].scrollTop = chatlog[0].scrollHeight        # scroll down
       
-      set_tab_unread(bare_from)
+      set_tab_unread(message.from, 'private')
 
   $('.join button').show().click ->
     
@@ -240,7 +281,7 @@ exports.init = ->
       
       subscribe_to_channel_events(bare_channel, user)
             
-      show_channel(bare_channel)
+      show_tab(bare_channel, 'channel')
 
     
   $('#reconnectButton').click (event) ->
