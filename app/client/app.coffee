@@ -40,7 +40,7 @@ exports.init = ->
       message_view.appendTo(chatlog)
 
       # dont annoy user while he is obviously reading by suddenly moving the scroll bar to the bototm
-      unless Math.abs(chatlog[0].scrollHeight - chatlog[0].scrollTop) > 350 
+      unless Math.abs(chatlog[0].scrollHeight - chatlog[0].scrollTop) > 350
         # none moved the scroll bar to a custom location up away (i.e further than 350), so scroll down
         chatlog[0].scrollTop = chatlog[0].scrollHeight
       
@@ -90,6 +90,8 @@ exports.init = ->
     invisible_tab = $(".tabs-content.#{bare_name}.#{type}")
     invisible_tab.addClass('visible')
     invisible_tab.find('.message').focus()
+    chatlog = invisible_tab.find('.chatlog')
+    chatlog[0].scrollTop = chatlog[0].scrollHeight
     
     # remove the unread styling on the tab link (if it exsits)
     $(".tabs-link.#{bare_name}.#{type}").css('color', '#999')
@@ -232,6 +234,7 @@ exports.init = ->
       unless is_there_such_private_tab(member)
         create_private_tab(member, user)
         update_tab_list()
+      $('#status').removeClass().addClass('success').text("Started chat with #{member}")
       show_tab(member, 'private')
     
   handle_private_message = (to) ->
@@ -245,7 +248,7 @@ exports.init = ->
         create_private_tab(message.from, to)
         update_tab_list()
         
-      message_view = $("<p>#{message.text}</p>")
+      message_view = $("<p><strong>#{message.from}:</strong> #{message.text}</p>")
       chatlog = $(".tabs-content.#{bare_from}.private").find('.chatlog')
       message_view.appendTo(chatlog)
       chatlog[0].scrollTop = chatlog[0].scrollHeight        # scroll down
