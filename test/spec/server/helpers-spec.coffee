@@ -491,7 +491,7 @@ describe 'Server helpers', ->
         # our test subject here, observeSessionHeartbeat ,  will be called by the constructor
         new helpers.SessionObserver(session_manager)
         clock.tick(999*1000)
-        expect(session_manager.handleHeartbeat).toHaveBeenCalledWith({ start: 1234482488950, end: 1234482490049 })
+        expect(session_manager.handleHeartbeat).toHaveBeenCalledWith({ start: 1234482488950, end: 1234483488050 })
         clock.restore()
         
   describe 'an OnlineDataManager', ->
