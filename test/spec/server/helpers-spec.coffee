@@ -247,7 +247,7 @@ describe 'Server helpers', ->
         expect(R.sadd).toHaveBeenCalledWith('some:set', 'some_item')
         expect(R.sadd).toHaveBeenCalledWith('some:set', 'a_item')
 
-    describe 'Removing items from the set', ->
+    describe 'Removing items from a set', ->
       beforeEach ->
         global.R = 
           type: sinon.stub().yields(0, 'set')
@@ -260,6 +260,34 @@ describe 'Server helpers', ->
         storage.remove('some:set', 'a_item')
         expect(R.srem).toHaveBeenCalledWith('some:set', 'some_item')
         expect(R.srem).toHaveBeenCalledWith('some:set', 'a_item')
+
+    describe 'Adding items to a stored set', ->
+      beforeEach ->
+        global.R = 
+          zadd: sinon.spy()
+      afterEach ->
+        global.R = {}
+      it 'should add them to the underlying storage', ->
+        storage = new helpers.StreamStorage()
+        storage.zstore('some:sorted:set', 1, 'some_item')
+        storage.zstore('some:sorted:set', 2 ,'a_item')
+        expect(R.zadd).toHaveBeenCalledWith('some:sorted:set', 1, 'some_item')
+        expect(R.zadd).toHaveBeenCalledWith('some:sorted:set', 2, 'a_item')
+
+    describe 'Removing items from a sorted set', ->
+      beforeEach ->
+        global.R = 
+          type: sinon.stub().yields(0, 'zset')
+          zrem: sinon.spy()
+      afterEach ->
+        global.R = {}
+      it 'should remove them from the underlying storage', ->
+        storage = new helpers.StreamStorage()
+        storage.remove('some:sorted:set', 'some_item')
+        storage.remove('some:sorted:set', 'a_item')
+        expect(R.zrem).toHaveBeenCalledWith('some:sorted:set', 'some_item')
+        expect(R.zrem).toHaveBeenCalledWith('some:sorted:set', 'a_item')
+
 
     describe 'Adding a single string key/value', ->
       beforeEach ->
@@ -332,6 +360,7 @@ describe 'Server helpers', ->
     beforeEach ->
       global.R = 
         sismember: sinon.stub().yields(0, true)
+        type: sinon.stub().yields(0, 'set')
     afterEach ->
       global.R = {}
     it 'should callback true if it is', ->
@@ -340,6 +369,20 @@ describe 'Server helpers', ->
       storage.ismember 'some:set', 'some_member', (err, ismember) ->
         expect(ismember).toBeTruthy
         expect(R.sismember).toHaveBeenCalledWith('some:set', 'some_member')
+
+  describe 'Checking if a given value is a member of a given sorted set', ->
+    beforeEach ->
+      global.R = 
+        zscore: sinon.stub().yields(0, 1)
+        type: sinon.stub().yields(0, 'zset')
+    afterEach ->
+      global.R = {}
+    it 'should callback true if it is', ->
+      storage = new helpers.StreamStorage()
+      # Vows.js style
+      storage.ismember 'some:sorted:set', 'some_member', (err, ismember) ->
+        expect(ismember).toBeTruthy
+        expect(R.zscore).toHaveBeenCalledWith('some:sorted:set', 'some_member')
 
 
     describe 'Querying for a list of keys that match a simple regex', ->
@@ -354,6 +397,31 @@ describe 'Server helpers', ->
         storage.keys 'some:long:*', (err, keys) ->
           expect(keys[0]).toEqual 'some:long:key'
           expect(R.keys).toHaveBeenCalledWith('some:long:*')
+          
+    describe 'Querying for a range of sorted set members that match a given score range', ->
+      beforeEach ->
+        global.R = 
+          zrangebyscore: sinon.stub().yields(0, ['some:sorted:set:member', 'another:sorted:set:member'])
+      afterEach ->
+        global.R = {}
+      it 'should get us all the keys that match the given regex', ->
+        storage = new helpers.StreamStorage()
+        # Vows.js style
+        storage.range 'sorted:set', 0, 1, (err, results) ->
+          expect(results[0]).toEqual 'some:sorted:set:member'
+          expect(results[1]).toEqual 'another:sorted:set:member'
+          expect(R.zrangebyscore).toHaveBeenCalledWith('sorted:set', 0, 1)
+        
+    describe 'Removing a range of sorted set members that match a given score range', ->
+      beforeEach ->
+        global.R = 
+          zremrangebyscore: sinon.spy()
+      afterEach ->
+        global.R = {}
+      it 'should get us all the keys that match the given regex', ->
+        storage = new helpers.StreamStorage()
+        storage.remrange 'sorted:set', 0, 1
+        expect(R.zremrangebyscore).toHaveBeenCalledWith('sorted:set', 0, 1)
         
   describe 'a DataObserver', ->
     describe 'upon initializition', ->
@@ -423,8 +491,7 @@ describe 'Server helpers', ->
         # our test subject here, observeSessionHeartbeat ,  will be called by the constructor
         new helpers.SessionObserver(session_manager)
         clock.tick(999*1000)
-        
-        expect(session_manager.handleHeartbeat).toHaveBeenCalledWith(1234482)
+        expect(session_manager.handleHeartbeat).toHaveBeenCalledWith({ start: 1234482488950, end: 1234482490049 })
         clock.restore()
         
   describe 'an OnlineDataManager', ->
@@ -525,22 +592,24 @@ describe 'Server helpers', ->
     describe 'handling a session disconnection', ->
       it 'should store the session id in the offline sessions list and store the session disconnection time', -> 
         runs ->
-          storage = { sstore: sinon.stub(), store: sinon.stub(), list: sinon.spy(), get: sinon.stub().yields(0, ['some_channel', 'a_channel']) }
+          storage = 
+            sstore: sinon.spy(), 
+            store: sinon.spy(), 
+            zstore: sinon.spy(), 
+            list: sinon.spy(), 
+            get: sinon.stub().yields(0, ['some_channel', 'a_channel'])
+            
           disconnected_session = {id : 1}
           clock = sinon.useFakeTimers(1234567890000)
           manager = new helpers.SessionManager(storage)
           manager.handleDisconnect(disconnected_session)
-          expect(storage.sstore).toHaveBeenCalledWithExactly('offline:sessions', 1)
-          expect(storage.store).toHaveBeenCalledWithExactly('offline:1:at:1234567860', 1)
+          expect(storage.zstore).toHaveBeenCalledWithExactly('offline:sessions', 1234567890000, 1)
           clock.restore()
 
     describe 'handling a session reconnection', ->
         beforeEach ->
           global.SS = publish: user: sinon.spy()
           @storage = 
-            keys: (key, cb) ->
-              if key == 'offline:1:at:*'
-                return cb 0, ['offline:1:at:1234567890']
             remove: sinon.spy()
             get: (key, cb) ->
               if key == 'offline:1:some_channel:messages'
@@ -570,15 +639,10 @@ describe 'Server helpers', ->
           runs ->
             @manager.handleReconnect(@reconnected_session)
             expect(@storage.remove).toHaveBeenCalledWith('offline:1:private')
-        it 'should remove the session from the offline session list', ->
+        it 'should remove the session from offline sessions', ->
           runs ->
             @manager.handleReconnect(@reconnected_session)
             expect(@storage.remove).toHaveBeenCalledWith('offline:sessions', 1)
-        it 'should remove the session offline timestamp key indicating when it went offline', ->
-          runs ->
-            @manager.handleReconnect(@reconnected_session)
-            expect(@storage.remove).toHaveBeenCalledWith('offline:1:at:1234567890')
-
 
 
     describe 'handling a session channel subscription', ->
@@ -600,24 +664,20 @@ describe 'Server helpers', ->
     describe 'handling a session heartbeat', ->
       beforeEach ->
         @storage = 
-          keys: (err, cb) -> 
-            cb(0, ["offline:1:at:1234567456", "offline:2:at:1234567123"])
-          get: (err, cb) -> 
+          range: (key, start, end, cb) -> 
+            cb(0, ['1', '2'])
+          get: (key, cb) -> 
             cb(0, ['1', '2'])  
-          remove: sinon.spy()
           
         @emit_spy = sinon.spy()
         manager = new helpers.SessionManager(@storage)
         manager.emit = @emit_spy
-        manager.handleHeartbeat(1234567)
+        manager.handleHeartbeat({ start: 1234482488950, end: 1234482490049 })
       it 'should emit a timeout event for all sesisons that have not sent a hearbeat since the given period', ->
         expect(@emit_spy).toHaveBeenCalledWith('timeout', '1')
         expect(@emit_spy).toHaveBeenCalledWith('timeout', '2')
       it 'should emit a heartbeat event for the period', ->
-        expect(@emit_spy).toHaveBeenCalledWith('hearbeat', 1234567)
-      it 'should remove the SocketStream last login entry from storage', ->
-        expect(@storage.remove).toHaveBeenCalledWith("offline:1:at:1234567456")
-        expect(@storage.remove).toHaveBeenCalledWith("offline:2:at:1234567123")
+        expect(@emit_spy).toHaveBeenCalledWith('hearbeat', { start: 1234482488950, end: 1234482490049 })
         
     describe 'handling a session tiemout', ->
       it 'should remove all session structures from storage', ->

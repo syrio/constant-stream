@@ -47,10 +47,10 @@ exports.config =
   # for expiration of lost sessions
   offline_expire:
     timeout: 24*60
-    interval: 990
+    interval: 999
 
   irc:
-    server: 'irc.freenode.net' # example server
-    #server:       "localhost" # work with local server liked ircdjs
+    #server: 'irc.freenode.net' # example server
+    server:       "localhost" # work with local server liked ircdjs
     name:         "constant-stream"
     real_name:    "IRC streamer"
